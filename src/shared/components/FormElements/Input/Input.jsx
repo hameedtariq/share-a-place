@@ -22,7 +22,7 @@ const inputReducer = (state, action) => {
 
 
 const Input = (props) => {
-    const [inputState, dispatch] = useReducer(inputReducer, {value:'',isValid:false, isTouched: false})
+    const [inputState, dispatch] = useReducer(inputReducer, {value:props.value || '',isValid:props.valid || false, isTouched: false})
 
     const {onInput, id} = props;
     const {value, isValid} = inputState;
@@ -47,8 +47,8 @@ const Input = (props) => {
     }
     
     const element = props.element === 'input' ? (
-        <input id={props.id} type={props.type} placeholder={props.placeholder} value={inputState.val} onChange={changeHandler} onBlur={onTouch}/>
-    ) : <textarea id={props.id} rows={props.rows || 3} value={inputState.val} onChange={changeHandler} onBlur={onTouch}/>
+        <input id={props.id} type={props.type} placeholder={props.placeholder} value={inputState.value} onChange={changeHandler} onBlur={onTouch}/>
+    ) : <textarea id={props.id} rows={props.rows || 3} value={inputState.value} onChange={changeHandler} onBlur={onTouch}/>
   return (
     <div className={`form-control ${!inputState.isValid && inputState.isTouched && 'form-control--invalid'}`}>
         <label htmlFor={props.id}>{props.label}</label>
