@@ -1,4 +1,6 @@
 import React from 'react'
+import { useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom'
 import Button from '../../shared/components/FormElements/Button/Button';
 import Input from '../../shared/components/FormElements/Input/Input';
@@ -35,21 +37,43 @@ const DUMMY_PLACES = [
 
 const UpdatePlace = () => {
     const placeId = useParams().pid;
-
-    const identifiedPlace = DUMMY_PLACES.find(p => p.id === placeId)
-    const [formState, inputHandler] = useForm({
+    const [isLoading,setIsLoading] = useState(true);
+    const [formState, inputHandler, setFormData] = useForm({
         title: {
-            value: identifiedPlace.title,
-            isValid: true,
+            value: '',
+            isValid: false,
         },
         description: {
-            value: identifiedPlace.description,
-            isValid: true,
+            value: '',
+            isValid: false,
         }
-    },true)
+    },false)
+    console.log(formState);
+    const identifiedPlace = DUMMY_PLACES.find(p => p.id === placeId)
+
+    useEffect(()=> {
+        console.log(identifiedPlace.title);
+        setFormData({
+            title: {
+                value: identifiedPlace.title,
+                isValid: true,
+            },
+            description: {
+                value: identifiedPlace.description,
+                isValid: true,
+            }
+        }, true)
+        console.log(formState.inputs.title.value);
+       setIsLoading(false);
+    },[identifiedPlace])
+    
 
 
-    // console.log(identifiedPlace);
+    const placeUpdateHandler = (e)=> {
+        e.preventDefault();
+        console.log(formState);
+    }
+
     if(!identifiedPlace)
     {
         return (
@@ -58,11 +82,12 @@ const UpdatePlace = () => {
             </div>
         )
     }
-
-
-    const placeUpdateHandler = (e)=> {
-        e.preventDefault();
-        console.log(formState);
+    if(isLoading){
+        return (
+            <div className='center'>
+                <h2>Loading...</h2>
+            </div>
+        ) 
     }
     
     return (
