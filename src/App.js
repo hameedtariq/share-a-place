@@ -8,7 +8,7 @@ import Users from './user/pages/Users'
 import Auth from './user/pages/Auth'
 import { Provider } from './shared/context/auth-context'
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const login = useCallback(()=> {
     setIsLoggedIn(true);
   },[])
