@@ -14,14 +14,16 @@ const useHttpClient = ()=> {
         activeHttpRequests.current.push(httpAbortCtrl);
         try {
             // console.log('here!');
+           
           const res = await fetch(url, {
             method,
             body,
             headers,
             signal: httpAbortCtrl.signal
           });
-
           const resData = await res.json();
+          console.log(resData);
+
           activeHttpRequests.current = activeHttpRequests.current.filter((abortCtrl) => abortCtrl !== httpAbortCtrl)
 
           if(!res.ok) {
@@ -35,7 +37,7 @@ const useHttpClient = ()=> {
           setError(err.message || 'Something went wrong while loading users, please try again.')
           throw err;
         }
-    })
+    },[])
 
     const clearError = ()=> {
         setError(null)

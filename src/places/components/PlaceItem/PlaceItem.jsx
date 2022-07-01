@@ -5,11 +5,19 @@ import './PlaceItem.css'
 import Modal from '../../../shared/components/UIElements/Modal/Modal'
 import Map from '../../../shared/components/UIElements/Map/Map'
 import AuthContext from '../../../shared/context/auth-context'
+import { useHttpClient } from '../../../shared/hooks/http-hook'
+import LoadingSpinner from '../../../shared/components/UIElements/LoadingSpinner/LoadingSpinner'
+import ErrorModal from '../../../shared/components/UIElements/ErrorModal/ErrorModal'
+// import { useNavigate } from 'react-router-dom'
 
 
-const PlaceItem = ({id,imageURL,title,description,address,creatorId, location}) => {
-    const {isLoggedIn} = useContext(AuthContext)
+const PlaceItem = ({id,imageURL,title,description,address,creatorId, location, onDeletePlace}) => {
+    const {loading, error, sendRequest, clearError} = useHttpClient();
+    const {isLoggedIn, userId} = useContext(AuthContext)
     const [showMap, setShowMap] = useState(false);
+    // const [deleteMessage, setDeleteMessage] = useState('')
+    // const navigate = useNavigate();
+
     const openMapHandler = ()=> setShowMap(true);
     const closeMapHandler = ()=> setShowMap(false);
     
@@ -18,9 +26,24 @@ const PlaceItem = ({id,imageURL,title,description,address,creatorId, location}) 
     const closeDeleteHandler = ()=> setShowDelete(false);
 
 
+    const deletePlace = async ()=> {
+        try {
+            closeDeleteHandler();
+            await sendRequest(`http://localhost:5000/api/places/${id}`,'DELETE');
+            onDeletePlace(id)
+            
+        } catch (error) {
+            
+        }
+
+        
+    }
+
+
 
     return (
         <>
+        <ErrorModal error={error} onClear={clearError}/>
         <Modal
             show={showMap}
             onCancel={closeMapHandler}
@@ -38,13 +61,16 @@ const PlaceItem = ({id,imageURL,title,description,address,creatorId, location}) 
             onCancel={closeDeleteHandler}
             header="Are you sure?"
             footerClass="place-item__modal-actions"
-            footer ={<><Button inverse onClick={closeDeleteHandler}>CANCEL</Button> <Button danger onClick={()=> {console.log("DELETING..."); closeDeleteHandler()}}>DELETE</Button></>}
+            footer ={<><Button inverse onClick={closeDeleteHandler}>CANCEL</Button> <Button danger onClick={deletePlace}>DELETE</Button></>}
         
         >
             Are you sure that you want to delete this place? This action cannot be undone.
         </Modal>
         <li className='place-item'>
+            
             <Card className='place-item__content'>
+            {loading && <LoadingSpinner asOverlay/>}
+            {/* <p className='center'>{deleteMessage}</p> */}
                 <div className='place-item__image'>
                     <img src={imageURL} alt={title} />
                 </div>
@@ -55,7 +81,7 @@ const PlaceItem = ({id,imageURL,title,description,address,creatorId, location}) 
                 </div>
                 <div className='place-item__actions'>
                     <Button inverse onClick={openMapHandler}>VIEW ON MAP</Button>
-                    {isLoggedIn && <><Button to={`/places/${id}`}>EDIT</Button>
+                    {isLoggedIn && (creatorId === userId) &&<><Button to={`/places/${id}`}>EDIT</Button>
                     <Button danger onClick={openDeleteHandler}>DELETE</Button></>}
 
 

@@ -1,40 +1,35 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import ErrorModal from '../../shared/components/UIElements/ErrorModal/ErrorModal'
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner/LoadingSpinner'
+import { useHttpClient } from '../../shared/hooks/http-hook'
 import PlaceList from '../components/PlaceList/PlaceList'
 
-const DUMMY_PLACES = [
-    {
-        id: 'p1',
-        title: 'Empire State Building',
-        description: 'One of the most famous sky scrapers in world!',
-        imageURL: 'https://media.timeout.com/images/101705309/750/422/image.jpg',
-        address: '20 W 34th St., New York, NY 10001, United States',
-        location: {
-            lat: 40.7484,
-            lng: -73.9857,
-        },
-        creatorId: 'u2'
-    },
-    {
-        id: 'p2',
-        title: 'Badshahi Mosque',
-        description: 'One of the most famous Mosques of the world',
-        imageURL: 'https://www.maxpixel.net/static/photo/1x/Badshahi-Mosque-Lahore-Lhr-Badshahi-Mosque-Lahore-2299807.jpg',
-        address: '20 W 34th St., New York, NY 10001, United States',
-        location: {
-            lat: 31.5879664,
-            lng: 74.3085249,
-        },
-        creatorId: 'u1'
-    }
-]
-
-
 const UserPlaces = () => {
+    const {loading, error, sendRequest, clearError} = useHttpClient();
+    const [places, setPlaces] = useState([])
     const {uid: userId} = useParams();
-    const loadedPlaces = DUMMY_PLACES.filter((place)=> place.creatorId === userId);
+    // const loadedPlaces = DUMMY_PLACES.filter((place)=> place.creatorId === userId);
+    const onDeletePlace = (id)=> {
+        console.log('hello');
+        setPlaces(prevPlaces => prevPlaces.filter((place) => place.id !== id))
+    }
+    useEffect(()=> {
+        const fetchUserPlaces = async ()=>  {
+            try {
+                const resData = await sendRequest(`http://localhost:5000/api/places/user/${userId}`);
+                setPlaces(resData.places)
+                
+            } catch (error) {}
+        }
+        fetchUserPlaces();
+    }, [sendRequest, userId])
   return (
-    <PlaceList items={loadedPlaces}/>
+    <>
+        <ErrorModal error={error} onClear={clearError}/>
+        {loading && <LoadingSpinner asOverlay/>}
+        {!loading && <PlaceList items={places} onDeletePlace= {onDeletePlace}/>}
+    </>
   )
 }
 

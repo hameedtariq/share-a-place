@@ -20,7 +20,7 @@ const Users = () => {
       }
     }
     sendRequesWrapper();
-  },[])
+  },[sendRequest])
 
 
     

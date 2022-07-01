@@ -9,7 +9,9 @@ import Auth from './user/pages/Auth'
 import { Provider } from './shared/context/auth-context'
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const login = useCallback(()=> {
+  const [userId, setUserId] = useState('');
+  const login = useCallback((uid)=> {
+    setUserId(uid);
     setIsLoggedIn(true);
   },[])
   const logout = useCallback(()=> {
@@ -43,7 +45,7 @@ const App = () => {
 
 
   return (
-    <Provider value={{isLoggedIn,login,logout}}>
+    <Provider value={{isLoggedIn,login,logout, userId}}>
       <BrowserRouter>
         <main>
           <MainNavigation />
