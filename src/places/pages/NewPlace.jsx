@@ -9,10 +9,11 @@ import AuthContext from '../../shared/context/auth-context'
 import ErrorModal from '../../shared/components/UIElements/ErrorModal/ErrorModal'
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner/LoadingSpinner'
 import {useNavigate} from 'react-router-dom'
+import ImageUpload from '../../shared/components/FormElements/ImageUpload/ImageUpload'
 
 const NewPlace = () => {
   const {loading, error, sendRequest, clearError} = useHttpClient();
-  const {userId} = useContext(AuthContext);
+  const {userId, token} = useContext(AuthContext);
   const navigate = useNavigate();
   const [formState, inputHandler] = useForm({
     title: {
@@ -26,6 +27,10 @@ const NewPlace = () => {
     address: {
       value: '',
       isValid: false,
+    },
+    image: {
+      value: null,
+      isValid: false,
     }
   }, false)  
   
@@ -36,16 +41,20 @@ const NewPlace = () => {
   const placeSubmitHandler = async (e)=> {
     e.preventDefault();
     try {
+      const formData = new FormData();
+      formData.append('title', formState.inputs.title.value);
+      formData.append('description', formState.inputs.description.value);
+      formData.append('address', formState.inputs.address.value);
+      formData.append('creatorId', userId);
+      formData.append('image', formState.inputs.image.value);
+      
       await sendRequest('http://localhost:5000/api/places',
        'POST',
-       JSON.stringify({
-        title: formState.inputs.title.value,
-        description: formState.inputs.description.value,
-        address: formState.inputs.address.value,
-        creatorId: userId
-      }), {
-        'Content-Type': 'application/json',
-      })
+        formData,
+        {
+          'Authorization': `Bearer ${token}`,
+        }
+       )
       navigate(`/${userId}/places`);
     } catch (error) {
       
@@ -60,6 +69,7 @@ const NewPlace = () => {
         <Input type="text" label="Title" element="input" id="title" validators={[VALIDATOR_REQUIRE()]} onInput={inputHandler} errorText="Please enter a valid title"/>
         <Input type="text" label="Address" element="input" id="address" validators={[VALIDATOR_REQUIRE()]} onInput={inputHandler} errorText="Please enter a valid address"/>
         <Input label="Description" element="textarea" id="description" validators={[VALIDATOR_MINLENGTH(5)]} onInput={inputHandler} errorText="Please enter a valid description."/>
+        <ImageUpload id='image' onInput={inputHandler}/>
         <Button type='submit' disabled={!formState.isValid} onClick={placeSubmitHandler}>
           ADD PLACE
         </Button>

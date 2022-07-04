@@ -11,9 +11,9 @@ import ErrorModal from '../../../shared/components/UIElements/ErrorModal/ErrorMo
 // import { useNavigate } from 'react-router-dom'
 
 
-const PlaceItem = ({id,imageURL,title,description,address,creatorId, location, onDeletePlace}) => {
+const PlaceItem = ({id,image,title,description,address,creatorId, location, onDeletePlace}) => {
     const {loading, error, sendRequest, clearError} = useHttpClient();
-    const {isLoggedIn, userId} = useContext(AuthContext)
+    const {isLoggedIn, userId, token} = useContext(AuthContext)
     const [showMap, setShowMap] = useState(false);
     // const [deleteMessage, setDeleteMessage] = useState('')
     // const navigate = useNavigate();
@@ -29,7 +29,7 @@ const PlaceItem = ({id,imageURL,title,description,address,creatorId, location, o
     const deletePlace = async ()=> {
         try {
             closeDeleteHandler();
-            await sendRequest(`http://localhost:5000/api/places/${id}`,'DELETE');
+            await sendRequest(`http://localhost:5000/api/places/${id}`,'DELETE',null, {'Authorization': `Bearer ${token}`});
             onDeletePlace(id)
             
         } catch (error) {
@@ -72,7 +72,7 @@ const PlaceItem = ({id,imageURL,title,description,address,creatorId, location, o
             {loading && <LoadingSpinner asOverlay/>}
             {/* <p className='center'>{deleteMessage}</p> */}
                 <div className='place-item__image'>
-                    <img src={imageURL} alt={title} />
+                    <img src={`http://localhost:5000/${image}`} alt={title} />
                 </div>
                 <div className='place-item__info'>
                     <h2>{title}</h2>

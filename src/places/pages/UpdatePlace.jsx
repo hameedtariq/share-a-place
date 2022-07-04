@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
@@ -7,6 +7,7 @@ import Input from '../../shared/components/FormElements/Input/Input';
 import Card from '../../shared/components/UIElements/Card/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner/LoadingSpinner';
+import AuthContext from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from '../../shared/util/validators';
@@ -40,6 +41,7 @@ import { VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from '../../shared/util/valida
 
 
 const UpdatePlace = () => {
+    const {token} = useContext(AuthContext);
     const {loading, sendRequest, error, clearError} = useHttpClient()
     const navigate = useNavigate()
     const placeId = useParams().pid;
@@ -100,7 +102,8 @@ const UpdatePlace = () => {
                 description: formState.inputs.description.value,
             }),
             {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             }
             )
             navigate(`/${resData.place.creatorId}/places`)

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom'
 import NewPlace from './places/pages/NewPlace'
 import UserPlaces from './places/pages/UserPlaces'
@@ -7,19 +7,48 @@ import MainNavigation from './shared/components/Navigation/MainNavigation/MainNa
 import Users from './user/pages/Users'
 import Auth from './user/pages/Auth'
 import { Provider } from './shared/context/auth-context'
+
+let logoutTimmer;
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [token, setToken] = useState(null);
   const [userId, setUserId] = useState('');
-  const login = useCallback((uid)=> {
+  const [tokenExpirationDate, setTokenExpirationDate] = useState();
+  const login = useCallback((uid,token,expiration)=> {
     setUserId(uid);
-    setIsLoggedIn(true);
+    setToken(token);
+    const expirationDate = expiration || new Date(new Date().getTime() + 1000 * 60 * 60 * 24);
+    setTokenExpirationDate(expirationDate);
+    localStorage.setItem('userData',JSON.stringify({userId: uid, token: token, expiration: expirationDate.toISOString()}));
   },[])
   const logout = useCallback(()=> {
-    setIsLoggedIn(false);
+    setToken(null);
+    setTokenExpirationDate(null);
+    setUserId('');
+    localStorage.removeItem('userData');
   },[])
+
+
+  useEffect(()=> {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if(userData && userData.token && (new Date(userData.expiration) > new Date())){
+      login(userData.userId, userData.token, new Date(userData.expiration));
+    }
+  },[login])
+
+
+  // auto logout when the time limit is reached
+  useEffect(()=> {
+    if(token && tokenExpirationDate){
+      const timeLeft = tokenExpirationDate.getTime() - new Date().getTime();
+      logoutTimmer = setTimeout(logout, timeLeft);
+    } else {
+      clearTimeout(logoutTimmer);
+    }
+  },[tokenExpirationDate, logout])
+
   //hello
   let routes;
-  if(isLoggedIn){
+  if(token){
     routes = (
       <Routes>
             <Route path='/' element={<Users/>}></Route>
@@ -45,7 +74,7 @@ const App = () => {
 
 
   return (
-    <Provider value={{isLoggedIn,login,logout, userId}}>
+    <Provider value={{isLoggedIn: !!token ,login,logout, userId, token}}>
       <BrowserRouter>
         <main>
           <MainNavigation />

@@ -10,6 +10,7 @@ import { useForm } from '../../shared/hooks/form-hook'
 import { VALIDATOR_EMAIL, VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from '../../shared/util/validators'
 import './Auth.css'
 import { useHttpClient } from '../../shared/hooks/http-hook'
+import ImageUpload from '../../shared/components/FormElements/ImageUpload/ImageUpload'
 
 const Auth = () => {
     const {loading, error, sendRequest, clearError} = useHttpClient();
@@ -39,6 +40,10 @@ const Auth = () => {
                 name: {
                     value: '',
                     isValid: false,
+                },
+                image: {
+                    value: null,
+                    isValid: false,
                 }                
             },false)
         }else{
@@ -56,18 +61,18 @@ const Auth = () => {
         
         if(!isLogin){
             try {
+                const formData = new FormData();
+                formData.append('name', formState.inputs.name.value);
+                formData.append('email', formState.inputs.email.value);
+                formData.append('password', formState.inputs.password.value);
+                formData.append('image', formState.inputs.image.value);
+
                 const resData = await sendRequest(
                     'http://localhost:5000/api/users/signup',
                     'POST',
-                    JSON.stringify({ name: formState.inputs.name.value,
-                    email: formState.inputs.email.value,
-                    password: formState.inputs.password.value,
-                    }),
-                    {
-                        'Content-Type': 'application/json',
-                    }
+                    formData
                 )
-                login(resData.user.id)
+                login(resData.userId,resData.token);
 
             } catch(err){}
         }else {
@@ -83,7 +88,7 @@ const Auth = () => {
                         'Content-Type': 'application/json',
                     }
                 )
-                login(resData.user.id)
+                login(resData.userId,resData.token)
 
             } catch(err){}
         }
@@ -123,6 +128,10 @@ const Auth = () => {
          validators={[VALIDATOR_REQUIRE(), VALIDATOR_MINLENGTH(6)]}
          onInput={inputHandler}
         />
+
+        {
+            !isLogin && <ImageUpload center id='image' onInput={inputHandler}/>
+        }
 
         <Button type='submit' onClick={authSubmitHandler} disabled={!formState.isValid}>{!isLogin ? 'SIGN UP' : 'LOGIN'}</Button>
     </form>
